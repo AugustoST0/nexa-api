@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,5 +35,19 @@ public class Grupo {
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private List<Tag> tags = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "grupo_tokens", joinColumns = @JoinColumn(name = "grupo_id"))
+    @OrderColumn(name = "token_ordem")
+    @Column(name = "token")
+    private List<String> tokens = new ArrayList<>();
+
+    @Column(name = "criado_em", updatable = false)
+    private LocalDateTime criadoEm;
+
+    @PrePersist
+    void prePersist() {
+        this.criadoEm = LocalDateTime.now();
+    }
 
 }

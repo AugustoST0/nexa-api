@@ -51,6 +51,10 @@ public class GrupoService {
             grupo.setTags(updatedGrupo.getTags());
         }
 
+        if (updatedGrupo.getTokens() != null) {
+            grupo.setTokens(updatedGrupo.getTokens());
+        }
+
         return grupoRepository.save(grupo);
     }
 
