@@ -36,20 +36,6 @@ public class TagController {
         return Response.ok(tag).build();
     }
 
-    @GET
-    @Path("/grupo/{id}")
-    public Response getTagsByGrupoId(@PathParam("id") Long id) {
-        List<Tag> tags = tagService.getTagsByGrupoId(id);
-        return Response.ok(tags).build();
-    }
-
-    @GET
-    @Path("/not-in-grupo/{grupoId}")
-    public Response getTagsNotInGrupo(@PathParam("grupoId") Long grupoId) {
-        List<Tag> tags = tagService.getTagsNotInGrupo(grupoId);
-        return Response.ok(tags).build();
-    }
-
     @POST
     @RolesAllowed("USER")
     public Response create(@Valid TagCreateDTO dto) {
@@ -63,22 +49,6 @@ public class TagController {
     public Response update(@PathParam("id") Long id, @Valid TagUpdateDTO dto) {
         Tag tag = tagService.update(id, dto);
         return Response.ok(tag).build();
-    }
-
-    @POST
-    @Path("/{tagId}/grupo/{grupoId}")
-    @RolesAllowed("USER")
-    public Response linkToGrupo(@PathParam("tagId") Long tagId, @PathParam("grupoId") Long grupoId) {
-        tagService.linkToGrupo(tagId, grupoId);
-        return Response.noContent().build();
-    }
-
-    @DELETE
-    @Path("/{tagId}/grupo/{grupoId}")
-    @RolesAllowed("USER")
-    public Response unlinkFromGrupo(@PathParam("tagId") Long tagId, @PathParam("grupoId") Long grupoId) {
-        tagService.unlinkFromGrupo(tagId, grupoId);
-        return Response.noContent().build();
     }
 
     @DELETE

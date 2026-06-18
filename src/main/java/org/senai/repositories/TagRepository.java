@@ -17,14 +17,6 @@ public class TagRepository implements PanacheRepository<Tag> {
         return tag;
     }
 
-    public List<Tag> findTagsNotInGrupo(Long grupoId) {
-        return find(
-                "SELECT t FROM Tag t WHERE t.id NOT IN " +
-                        "(SELECT t2.id FROM Grupo g JOIN g.tags t2 WHERE g.id = ?1)",
-                grupoId
-        ).list();
-    }
-
     public List<Tag> findAllById(List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             return List.of();

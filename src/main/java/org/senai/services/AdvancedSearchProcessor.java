@@ -1,8 +1,6 @@
 package org.senai.services;
 
-import org.senai.model.Grupo;
 import org.senai.model.Tag;
-import org.senai.repositories.GrupoRepository;
 import org.senai.repositories.TagRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -15,9 +13,6 @@ public class AdvancedSearchProcessor {
 
     @Inject
     TagRepository tagRepository;
-
-    @Inject
-    GrupoRepository grupoRepository;
 
     private static final String OPERATOR_AND = "E";
     private static final String OPERATOR_OR = "OU";
@@ -61,7 +56,6 @@ public class AdvancedSearchProcessor {
 
     /**
      * Resolves a token to a list of tag names
-     * If token is a group name, expands to its tags
      * If token is a tag name, returns it as a single-item list
      * If token is unknown, returns empty list
      */
@@ -73,19 +67,6 @@ public class AdvancedSearchProcessor {
         token = token.trim();
 
         try {
-            // Check if it's a group
-            Optional<Grupo> grupo = grupoRepository.findByNome(token);
-            if (grupo.isPresent()) {
-                List<Tag> tags = grupo.get().getTags();
-                if (tags != null) {
-                    return tags.stream()
-                        .filter(Objects::nonNull)
-                        .map(Tag::getNome)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
-                }
-            }
-
             // Check if it's a tag
             Optional<Tag> tag = tagRepository.findByNome(token);
             if (tag.isPresent()) {

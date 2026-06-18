@@ -1,6 +1,5 @@
 package org.senai.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -8,9 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -30,8 +26,4 @@ public class Tag {
 
     @Size(max = 300, message = "A descrição não pode ter mais de 300 caracteres")
     private String descricao;
-
-    @ManyToMany(mappedBy = "tags")
-    @JsonIgnore
-    private List<Grupo> grupos = new ArrayList<>();
 }

@@ -2,8 +2,8 @@ package org.senai.services;
 
 import org.senai.exception.exceptions.RegisterNotFoundException;
 import org.senai.model.Grupo;
-import org.senai.model.Tag;
 import org.senai.repositories.GrupoRepository;
+import org.senai.repositories.RelatorioRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -15,6 +15,9 @@ public class GrupoService {
 
     @Inject
     GrupoRepository grupoRepository;
+
+    @Inject
+    RelatorioRepository relatorioRepository;
 
     public List<Grupo> getAll() {
         return grupoRepository.listAll();
@@ -43,14 +46,6 @@ public class GrupoService {
             grupo.setNome(updatedGrupo.getNome());
         }
 
-        if (updatedGrupo.getDescricao() != null) {
-            grupo.setDescricao(updatedGrupo.getDescricao());
-        }
-
-        if (updatedGrupo.getTags() != null) {
-            grupo.setTags(updatedGrupo.getTags());
-        }
-
         if (updatedGrupo.getTokens() != null) {
             grupo.setTokens(updatedGrupo.getTokens());
         }
@@ -60,7 +55,10 @@ public class GrupoService {
 
     @Transactional
     public void delete(Long id) {
-        Grupo grupo = getById(id);
+        getById(id);
+        // Desvincula relatórios já gerados (mantém o histórico) antes de remover o grupo,
+        // evitando violação da FK relatorios.grupo_id
+        relatorioRepository.update("grupo = null where grupo.id = ?1", id);
         grupoRepository.deleteById(id);
     }
 }

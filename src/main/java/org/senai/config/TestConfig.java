@@ -39,8 +39,8 @@ public class TestConfig {
         List<Tag> tags = createTags();
         System.out.println("Tags processadas (criadas ou já existentes)");
 
-        // Criar 10 Grupos com 3 tags cada (verificando duplicatas)
-        createGrupos(tags);
+        // Criar 6 Grupos (pesquisas salvas) definidos por tokens (verificando duplicatas)
+        createGrupos();
         System.out.println("Grupos processados (criados ou já existentes)");
 
         // Criar 60 Colaboradores com 5 tags cada (verificando duplicatas)
@@ -138,61 +138,37 @@ public class TestConfig {
         return tags;
     }
 
-    private void createGrupos(List<Tag> tags) {
+    private void createGrupos() {
         int gruposCriados = 0;
         int gruposExistentes = 0;
-        
-        String[][] gruposData = {
-            {"Desenvolvimento Backend", "Competências relacionadas ao desenvolvimento de sistemas backend", 
-                "Java", "Python", "Node.js"},
-            {"Desenvolvimento Frontend", "Competências relacionadas ao desenvolvimento de interfaces", 
-                "JavaScript", "React", "UI/UX Design"},
-            {"DevOps e Infraestrutura", "Competências relacionadas a DevOps e infraestrutura de TI", 
-                "Docker", "Kubernetes", "AWS"},
-            {"Gestão e Liderança", "Competências de gestão e liderança de equipes", 
-                "Liderança de Equipe", "Gestão de Projetos", "Gestão de Pessoas"},
-            {"Metodologias Ágeis", "Competências em metodologias ágeis de desenvolvimento", 
-                "Scrum", "Kanban", "Design Thinking"},
-            {"Análise de Dados", "Competências em análise e visualização de dados", 
-                "Análise de Dados", "Power BI", "Excel Avançado"},
-            {"Comunicação", "Competências de comunicação e relacionamento", 
-                "Comunicação Eficaz", "Apresentações", "Relacionamento Interpessoal"},
-            {"Idiomas", "Competências em idiomas estrangeiros", 
-                "Inglês Avançado", "Espanhol", "Redação Técnica"},
-            {"Design e Marketing", "Competências em design e marketing digital", 
-                "Marketing Digital", "Branding", "Redes Sociais"},
-            {"Banco de Dados", "Competências em banco de dados e SQL", 
-                "SQL", "Análise de Dados", "Business Intelligence"}
-        };
 
-        for (String[] grupoData : gruposData) {
-            // Verificar se o grupo já existe
-            Grupo grupoExistente = grupoRepository.findByNome(grupoData[0]).orElse(null);
-            
+        // Grupos = pesquisas salvas definidas por tokens (tag + operador: E / OU / NÃO POSSUI)
+        List<List<String>> gruposTokens = List.of(
+            List.of("Java", "E", "Python"),
+            List.of("React", "OU", "JavaScript"),
+            List.of("Docker", "E", "Kubernetes", "NÃO POSSUI", "AWS"),
+            List.of("Análise de Dados", "E", "Power BI"),
+            List.of("Scrum", "OU", "Kanban"),
+            List.of("Python", "E", "Machine Learning", "NÃO POSSUI", "Java")
+        );
+
+        for (List<String> tokens : gruposTokens) {
+            String nome = String.join(" ", tokens);
+
+            // Verificar se o grupo já existe (pelo nome)
+            Grupo grupoExistente = grupoRepository.findByNome(nome).orElse(null);
+
             if (grupoExistente == null) {
                 Grupo grupo = new Grupo();
-                grupo.setNome(grupoData[0]);
-                grupo.setDescricao(grupoData[1]);
-
-                List<Tag> tagsDoGrupo = new ArrayList<>();
-                for (int i = 2; i < grupoData.length; i++) {
-                    String nomeTag = grupoData[i];
-                    Tag tag = tags.stream()
-                        .filter(t -> t.getNome().equals(nomeTag))
-                        .findFirst()
-                        .orElse(null);
-                    if (tag != null) {
-                        tagsDoGrupo.add(tag);
-                    }
-                }
-                grupo.setTags(tagsDoGrupo);
+                grupo.setNome(nome);
+                grupo.setTokens(new ArrayList<>(tokens));
                 grupoRepository.persist(grupo);
                 gruposCriados++;
             } else {
                 gruposExistentes++;
             }
         }
-        
+
         System.out.println("Grupos: " + gruposCriados + " criados, " + gruposExistentes + " já existiam");
     }
 

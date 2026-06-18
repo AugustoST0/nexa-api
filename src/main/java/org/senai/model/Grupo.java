@@ -25,17 +25,6 @@ public class Grupo {
     @Size(max = 100, message = "O nome não pode ter mais de 100 caracteres")
     private String nome;
 
-    @Size(max = 300, message = "A descrição não pode ter mais de 300 caracteres")
-    private String descricao;
-
-    @ManyToMany
-    @JoinTable(
-            name = "grupo_tags",
-            joinColumns = @JoinColumn(name = "grupo_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    private List<Tag> tags = new ArrayList<>();
-
     @ElementCollection
     @CollectionTable(name = "grupo_tokens", joinColumns = @JoinColumn(name = "grupo_id"))
     @OrderColumn(name = "token_ordem")
