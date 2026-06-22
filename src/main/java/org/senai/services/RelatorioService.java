@@ -51,11 +51,21 @@ public class RelatorioService {
     public RelatorioResponseDTO gerar(Long grupoId) {
         Grupo grupo = grupoService.getById(grupoId);
 
-        if (grupo.getTokens() == null || grupo.getTokens().isEmpty()) {
-            throw new BusinessRuleException("O grupo não possui tokens de busca definidos");
+        boolean temTokens = grupo.getTokens() != null && !grupo.getTokens().isEmpty();
+        boolean temFiltros = grupo.getSupervisorId() != null
+                || grupo.getDataAdmissaoInicio() != null
+                || grupo.getDataAdmissaoFim() != null;
+
+        if (!temTokens && !temFiltros) {
+            throw new BusinessRuleException("O grupo não possui critérios de busca definidos");
         }
 
-        Map<String, Object> queryMap = advancedSearchProcessor.buildHQLQuery(grupo.getTokens());
+        Map<String, Object> queryMap = advancedSearchProcessor.buildCombinedQuery(
+                temTokens ? grupo.getTokens() : null,
+                grupo.getSupervisorId(),
+                grupo.getDataAdmissaoInicio(),
+                grupo.getDataAdmissaoFim()
+        );
         String query = (String) queryMap.get("query");
         @SuppressWarnings("unchecked")
         Map<String, Object> params = (Map<String, Object>) queryMap.get("params");
@@ -64,7 +74,7 @@ public class RelatorioService {
 
         Relatorio relatorio = new Relatorio();
         relatorio.setTitulo("Relatório - " + grupo.getNome() + " (" + relatorio.getGeradoEm().format(DATA) + ")");
-        relatorio.setParametros(String.join(" ", grupo.getTokens()));
+        relatorio.setParametros(temTokens ? String.join(" ", grupo.getTokens()) : grupo.getNome());
         relatorio.setGrupo(grupo);
         relatorio.setColaboradores(colaboradores);
 

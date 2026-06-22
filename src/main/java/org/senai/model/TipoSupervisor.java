@@ -2,6 +2,7 @@ package org.senai.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
@@ -23,4 +24,7 @@ public class TipoSupervisor {
 
     @Size(max = 300, message = "A descrição não pode ter mais de 300 caracteres")
     private String descricao;
+
+    @NotNull(message = "O nível é obrigatório")
+    private Integer nivel; // menor número = mais próximo do colaborador (ex.: 1 = Líder Técnico, 4 = Diretor)
 }

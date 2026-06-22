@@ -4,6 +4,7 @@ import org.hibernate.Hibernate;
 import org.senai.dtos.AtribuirSupervisorDTO;
 import org.senai.dtos.ColaboradorCreateUpdateDTO;
 import org.senai.dtos.ColaboradorFilterResponseDTO;
+import org.senai.dtos.SupervisorDiretoDTO;
 import org.senai.exception.exceptions.BusinessRuleException;
 import org.senai.exception.exceptions.RegisterNotFoundException;
 import org.senai.model.Colaborador;
@@ -17,6 +18,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 @ApplicationScoped
@@ -34,8 +36,32 @@ public class ColaboradorService {
     @Inject
     TipoSupervisorService tipoSupervisorService;
 
+    @Transactional
     public List<Colaborador> getAll() {
-        return colaboradorRepository.listAll();
+        List<Colaborador> colaboradores = colaboradorRepository.listAll();
+
+        for (Colaborador colaborador : colaboradores) {
+            // Inicializa as tags ainda dentro da transação (a serialização JSON ocorre depois)
+            colaborador.getTags().size();
+
+            // Busca explícita das supervisões ativas (supervisionado.id = colaborador e dataFim IS NULL)
+            // em vez de confiar na coleção lazy mappedBy — garante leitura fresca dos dados commitados.
+            List<Supervisao> supervisoesAtivas =
+                    supervisaoService.getSupervisoesAtivasPorColaborador(colaborador.getId());
+
+            supervisoesAtivas.stream()
+                    .min(Comparator.comparingInt(s ->
+                            s.getTipoSupervisor().getNivel() != null
+                                    ? s.getTipoSupervisor().getNivel()
+                                    : Integer.MAX_VALUE))
+                    .ifPresent(s -> colaborador.setSupervisor(new SupervisorDiretoDTO(
+                            s.getSupervisor().getId(),
+                            s.getSupervisor().getNome(),
+                            s.getTipoSupervisor().getNome()
+                    )));
+        }
+
+        return colaboradores;
     }
 
     public Colaborador getById(Long id) {
@@ -294,31 +320,30 @@ public class ColaboradorService {
         }
     }
 
-    public List<ColaboradorFilterResponseDTO> searchAdvanced(List<String> tokens) {
+    public List<ColaboradorFilterResponseDTO> searchAdvanced(List<String> tokens, Long supervisorId,
+                                                             LocalDate dataAdmissaoInicio, LocalDate dataAdmissaoFim) {
         try {
-            // Validate tokens
-            if (tokens == null) {
-                throw new IllegalArgumentException("Lista de tokens não pode ser nula");
-            }
-            
-            // Sanitize tokens
-            List<String> sanitizedTokens = tokens.stream()
+            // Sanitize tokens (podem vir nulos/vazios quando a busca usa apenas filtros extras)
+            List<String> sanitizedTokens = tokens == null ? List.of() : tokens.stream()
                 .filter(token -> token != null && !token.trim().isEmpty())
                 .map(String::trim)
                 .toList();
-            
-            if (sanitizedTokens.isEmpty()) {
-                throw new IllegalArgumentException("Pelo menos um token válido deve ser fornecido");
+
+            boolean temFiltros = supervisorId != null || dataAdmissaoInicio != null || dataAdmissaoFim != null;
+            if (sanitizedTokens.isEmpty() && !temFiltros) {
+                throw new IllegalArgumentException("Pelo menos um critério de busca deve ser fornecido");
             }
-            
-            var queryMap = advancedSearchProcessor.buildHQLQuery(sanitizedTokens);
+
+            var queryMap = advancedSearchProcessor.buildCombinedQuery(
+                    sanitizedTokens.isEmpty() ? null : sanitizedTokens,
+                    supervisorId, dataAdmissaoInicio, dataAdmissaoFim);
             String query = (String) queryMap.get("query");
             @SuppressWarnings("unchecked")
             java.util.Map<String, Object> params = (java.util.Map<String, Object>) queryMap.get("params");
-            
+
             List<Colaborador> colaboradores = colaboradorRepository.searchAdvanced(query, params);
             List<String> relevantTagNames = advancedSearchProcessor.getRelevantTagNames(sanitizedTokens);
-            
+
             return colaboradores.stream()
                 .map(c -> ColaboradorFilterResponseDTO.fromEntityWithFilteredTags(c, relevantTagNames))
                 .toList();

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,16 @@ public class Grupo {
     @OrderColumn(name = "token_ordem")
     @Column(name = "token")
     private List<String> tokens = new ArrayList<>();
+
+    // Filtros adicionais opcionais
+    @Column(name = "supervisor_id")
+    private Long supervisorId;
+
+    @Column(name = "data_admissao_inicio")
+    private LocalDate dataAdmissaoInicio;
+
+    @Column(name = "data_admissao_fim")
+    private LocalDate dataAdmissaoFim;
 
     @Column(name = "criado_em", updatable = false)
     private LocalDateTime criadoEm;

@@ -106,12 +106,12 @@ public class SupervisaoService {
     }
 
     @Transactional
-    public void encerrarSupervisao(Long id, String motivo) {
+    public void encerrarSupervisao(Long id) {
         Supervisao supervisao = getById(id);
         supervisao.setDataFim(LocalDate.now());
 
         String observacaoAtual = supervisao.getObservacoes() != null ? supervisao.getObservacoes() + " | " : "";
-        supervisao.setObservacoes(observacaoAtual + "Encerrado em " + LocalDate.now() + ". Motivo: " + motivo);
+        supervisao.setObservacoes(observacaoAtual + "Encerrado em " + LocalDate.now());
 
         supervisaoRepository.save(supervisao);
     }

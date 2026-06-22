@@ -1,5 +1,6 @@
 package org.senai.services;
 
+import org.senai.dtos.GrupoCreateDTO;
 import org.senai.exception.exceptions.RegisterNotFoundException;
 import org.senai.model.Grupo;
 import org.senai.repositories.GrupoRepository;
@@ -8,6 +9,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
@@ -34,23 +36,25 @@ public class GrupoService {
     }
 
     @Transactional
-    public Grupo create(Grupo grupo) {
+    public Grupo create(GrupoCreateDTO dto) {
+        Grupo grupo = new Grupo();
+        aplicarDados(grupo, dto);
         return grupoRepository.save(grupo);
     }
 
     @Transactional
-    public Grupo update(Long id, Grupo updatedGrupo) {
+    public Grupo update(Long id, GrupoCreateDTO dto) {
         Grupo grupo = getById(id);
-
-        if (updatedGrupo.getNome() != null) {
-            grupo.setNome(updatedGrupo.getNome());
-        }
-
-        if (updatedGrupo.getTokens() != null) {
-            grupo.setTokens(updatedGrupo.getTokens());
-        }
-
+        aplicarDados(grupo, dto);
         return grupoRepository.save(grupo);
+    }
+
+    private void aplicarDados(Grupo grupo, GrupoCreateDTO dto) {
+        grupo.setNome(dto.nome());
+        grupo.setTokens(dto.tokens() != null ? new ArrayList<>(dto.tokens()) : new ArrayList<>());
+        grupo.setSupervisorId(dto.supervisorId());
+        grupo.setDataAdmissaoInicio(dto.dataAdmissaoInicio());
+        grupo.setDataAdmissaoFim(dto.dataAdmissaoFim());
     }
 
     @Transactional

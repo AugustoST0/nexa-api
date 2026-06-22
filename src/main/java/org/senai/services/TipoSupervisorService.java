@@ -46,6 +46,10 @@ public class TipoSupervisorService {
             tipoSupervisor.setDescricao(updatedTipoSupervisor.getDescricao());
         }
 
+        if (updatedTipoSupervisor.getNivel() != null) {
+            tipoSupervisor.setNivel(updatedTipoSupervisor.getNivel());
+        }
+
         return tipoSupervisorRepository.save(tipoSupervisor);
     }
 

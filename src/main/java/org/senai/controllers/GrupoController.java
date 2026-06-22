@@ -1,7 +1,7 @@
 package org.senai.controllers;
 
+import org.senai.dtos.GrupoCreateDTO;
 import org.senai.model.Grupo;
-import org.senai.model.Tag;
 import org.senai.services.GrupoService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -37,16 +37,16 @@ public class GrupoController {
 
     @POST
     @RolesAllowed("USER")
-    public Response create(@Valid Grupo grupo) {
-        Grupo createdGrupo = grupoService.create(grupo);
+    public Response create(@Valid GrupoCreateDTO dto) {
+        Grupo createdGrupo = grupoService.create(dto);
         return Response.status(Response.Status.CREATED).entity(createdGrupo).build();
     }
 
     @PUT
     @Path("/{id}")
     @RolesAllowed("USER")
-    public Response update(@PathParam("id") Long id, @Valid Grupo updatedGrupo) {
-        Grupo grupo = grupoService.update(id, updatedGrupo);
+    public Response update(@PathParam("id") Long id, @Valid GrupoCreateDTO dto) {
+        Grupo grupo = grupoService.update(id, dto);
         return Response.ok(grupo).build();
     }
 

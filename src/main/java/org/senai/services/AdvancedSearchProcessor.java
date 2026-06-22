@@ -5,6 +5,7 @@ import org.senai.repositories.TagRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -205,7 +206,48 @@ public class AdvancedSearchProcessor {
             throw new RuntimeException("Erro ao construir consulta de busca avançada: " + e.getMessage(), e);
         }
     }
-    
+
+    /**
+     * Builds an HQL query combining the token-based filters with optional
+     * supervisor and admission-date filters. Any argument may be null/empty.
+     */
+    public Map<String, Object> buildCombinedQuery(List<String> tokens, Long supervisorId,
+                                                  LocalDate dataAdmissaoInicio, LocalDate dataAdmissaoFim) {
+        String baseQuery;
+        Map<String, Object> params;
+
+        if (tokens != null && !tokens.isEmpty()) {
+            Map<String, Object> base = buildHQLQuery(tokens);
+            baseQuery = (String) base.get("query");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> baseParams = (Map<String, Object>) base.get("params");
+            params = new HashMap<>(baseParams);
+        } else {
+            baseQuery = "SELECT c FROM Colaborador c WHERE 1=1";
+            params = new HashMap<>();
+        }
+
+        StringBuilder query = new StringBuilder(baseQuery);
+
+        if (supervisorId != null) {
+            query.append(" AND EXISTS (SELECT s FROM Supervisao s WHERE s.supervisionado.id = c.id")
+                 .append(" AND s.supervisor.id = :supervisorId AND s.dataFim IS NULL)");
+            params.put("supervisorId", supervisorId);
+        }
+
+        if (dataAdmissaoInicio != null) {
+            query.append(" AND c.dataAdmissao >= :dataAdmissaoInicio");
+            params.put("dataAdmissaoInicio", dataAdmissaoInicio);
+        }
+
+        if (dataAdmissaoFim != null) {
+            query.append(" AND c.dataAdmissao <= :dataAdmissaoFim");
+            params.put("dataAdmissaoFim", dataAdmissaoFim);
+        }
+
+        return Map.of("query", query.toString(), "params", params);
+    }
+
     /**
      * Validates tokens for security and correctness
      */

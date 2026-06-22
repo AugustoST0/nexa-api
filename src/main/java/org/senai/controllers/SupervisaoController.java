@@ -98,8 +98,8 @@ public class SupervisaoController {
     @PUT
     @Path("/{id}/encerrar")
     @RolesAllowed("USER")
-    public Response encerrarSupervisao(@PathParam("id") Long id, @QueryParam("motivo") String motivo) {
-        supervisaoService.encerrarSupervisao(id, motivo);
+    public Response encerrarSupervisao(@PathParam("id") Long id) {
+        supervisaoService.encerrarSupervisao(id);
         return Response.noContent().build();
     }
 

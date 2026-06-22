@@ -143,12 +143,13 @@ public class ColaboradorController {
     @Path("/search/advanced")
     public Response searchAdvanced(AdvancedSearchDTO dto) {
         try {
-            if (dto == null || dto.tokens() == null) {
+            if (dto == null) {
                 ErrorResponse error = new ErrorResponse("INVALID_REQUEST", "Dados de busca avançada são obrigatórios");
                 return Response.status(Response.Status.BAD_REQUEST).entity(error).build();
             }
-            
-            var resultado = colaboradorService.searchAdvanced(dto.tokens());
+
+            var resultado = colaboradorService.searchAdvanced(
+                    dto.tokens(), dto.supervisorId(), dto.dataAdmissaoInicio(), dto.dataAdmissaoFim());
             return Response.ok(resultado).build();
         } catch (BusinessRuleException e) {
             ErrorResponse error = new ErrorResponse("VALIDATION_ERROR", e.getMessage());

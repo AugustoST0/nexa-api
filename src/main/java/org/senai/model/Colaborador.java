@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.senai.dtos.SupervisorDiretoDTO;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -71,7 +72,12 @@ public class Colaborador {
     @JsonIgnore
     private List<Supervisao> supervisoes = new ArrayList<>();
 
+    // Supervisor direto (supervisão ativa de menor nível) — populado no ColaboradorService.getAll()
     @Transient
+    private SupervisorDiretoDTO supervisor;
+
+    @Transient
+    @JsonIgnore
     public boolean isSupervisor() {
         return !supervisionando.isEmpty();
     }

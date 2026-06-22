@@ -2,10 +2,14 @@ package org.senai.config;
 
 import org.senai.model.Colaborador;
 import org.senai.model.Grupo;
+import org.senai.model.Supervisao;
 import org.senai.model.Tag;
+import org.senai.model.TipoSupervisor;
 import org.senai.repositories.ColaboradorRepository;
 import org.senai.repositories.GrupoRepository;
+import org.senai.repositories.SupervisaoRepository;
 import org.senai.repositories.TagRepository;
+import org.senai.repositories.TipoSupervisorRepository;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
@@ -29,6 +33,12 @@ public class TestConfig {
     @Inject
     ColaboradorRepository colaboradorRepository;
 
+    @Inject
+    TipoSupervisorRepository tipoSupervisorRepository;
+
+    @Inject
+    SupervisaoRepository supervisaoRepository;
+
     private final Random random = new Random();
 
     @Transactional
@@ -43,11 +53,33 @@ public class TestConfig {
         createGrupos();
         System.out.println("Grupos processados (criados ou já existentes)");
 
+        // Criar Tipos de Supervisor (verificando duplicatas)
+        createTiposSupervisor();
+        System.out.println("Tipos de supervisor processados (criados ou já existentes)");
+
         // Criar 60 Colaboradores com 5 tags cada (verificando duplicatas)
         createColaboradores(tags);
         System.out.println("Colaboradores processados (criados ou já existentes)");
 
+        // Limpa observações legadas com "Motivo: null" gravadas por versões antigas
+        limparObservacoesMotivoNull();
+
         System.out.println("Seed concluído com sucesso!");
+    }
+
+    private void limparObservacoesMotivoNull() {
+        List<Supervisao> comMotivoNull =
+                supervisaoRepository.list("observacoes like ?1", "%Motivo: null%");
+
+        for (Supervisao supervisao : comMotivoNull) {
+            String obs = supervisao.getObservacoes()
+                    .replace(". Motivo: null", "")
+                    .replace("Motivo: null", "")
+                    .trim();
+            supervisao.setObservacoes(obs.isEmpty() ? null : obs);
+        }
+
+        System.out.println("Observações de supervisão limpas (Motivo: null removido): " + comMotivoNull.size());
     }
 
     private List<Tag> createTags() {
@@ -136,6 +168,43 @@ public class TestConfig {
 
         System.out.println("Tags: " + tagsCriadas + " criadas, " + tagsExistentes + " já existiam");
         return tags;
+    }
+
+    private void createTiposSupervisor() {
+        int tiposCriados = 0;
+        int tiposExistentes = 0;
+
+        // {nome, nivel} — menor nível = mais próximo do colaborador
+        Object[][] tiposData = {
+            {"Líder Técnico", 1},
+            {"Mentor", 1},
+            {"Coordenador", 2},
+            {"Gerente", 3},
+            {"Diretor", 4}
+        };
+
+        for (Object[] tipoData : tiposData) {
+            String nome = (String) tipoData[0];
+            Integer nivel = (Integer) tipoData[1];
+
+            TipoSupervisor existente = tipoSupervisorRepository.find("nome", nome).firstResult();
+
+            if (existente == null) {
+                TipoSupervisor tipo = new TipoSupervisor();
+                tipo.setNome(nome);
+                tipo.setNivel(nivel);
+                tipoSupervisorRepository.persist(tipo);
+                tiposCriados++;
+            } else {
+                // Corrige registros antigos sem nível
+                if (existente.getNivel() == null) {
+                    existente.setNivel(nivel);
+                }
+                tiposExistentes++;
+            }
+        }
+
+        System.out.println("Tipos de supervisor: " + tiposCriados + " criados, " + tiposExistentes + " já existiam");
     }
 
     private void createGrupos() {
