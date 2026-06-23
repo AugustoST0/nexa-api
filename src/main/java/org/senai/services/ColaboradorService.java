@@ -320,7 +320,7 @@ public class ColaboradorService {
         }
     }
 
-    public List<ColaboradorFilterResponseDTO> searchAdvanced(List<String> tokens, Long supervisorId,
+    public List<ColaboradorFilterResponseDTO> searchAdvanced(List<String> tokens, List<Long> supervisorIds,
                                                              LocalDate dataAdmissaoInicio, LocalDate dataAdmissaoFim) {
         try {
             // Sanitize tokens (podem vir nulos/vazios quando a busca usa apenas filtros extras)
@@ -329,14 +329,14 @@ public class ColaboradorService {
                 .map(String::trim)
                 .toList();
 
-            boolean temFiltros = supervisorId != null || dataAdmissaoInicio != null || dataAdmissaoFim != null;
+            boolean temFiltros = (supervisorIds != null && !supervisorIds.isEmpty()) || dataAdmissaoInicio != null || dataAdmissaoFim != null;
             if (sanitizedTokens.isEmpty() && !temFiltros) {
                 throw new IllegalArgumentException("Pelo menos um critério de busca deve ser fornecido");
             }
 
             var queryMap = advancedSearchProcessor.buildCombinedQuery(
                     sanitizedTokens.isEmpty() ? null : sanitizedTokens,
-                    supervisorId, dataAdmissaoInicio, dataAdmissaoFim);
+                    supervisorIds, dataAdmissaoInicio, dataAdmissaoFim);
             String query = (String) queryMap.get("query");
             @SuppressWarnings("unchecked")
             java.util.Map<String, Object> params = (java.util.Map<String, Object>) queryMap.get("params");

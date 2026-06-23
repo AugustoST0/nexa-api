@@ -33,8 +33,10 @@ public class Grupo {
     private List<String> tokens = new ArrayList<>();
 
     // Filtros adicionais opcionais
+    @ElementCollection
+    @CollectionTable(name = "grupo_supervisores", joinColumns = @JoinColumn(name = "grupo_id"))
     @Column(name = "supervisor_id")
-    private Long supervisorId;
+    private List<Long> supervisorIds = new ArrayList<>();
 
     @Column(name = "data_admissao_inicio")
     private LocalDate dataAdmissaoInicio;

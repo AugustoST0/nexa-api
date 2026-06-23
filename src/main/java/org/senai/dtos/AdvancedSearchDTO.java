@@ -5,7 +5,7 @@ import java.util.List;
 
 public record AdvancedSearchDTO(
     List<String> tokens,
-    Long supervisorId,
+    List<Long> supervisorIds,
     LocalDate dataAdmissaoInicio,
     LocalDate dataAdmissaoFim
 ) {}

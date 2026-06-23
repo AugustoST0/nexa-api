@@ -211,7 +211,7 @@ public class AdvancedSearchProcessor {
      * Builds an HQL query combining the token-based filters with optional
      * supervisor and admission-date filters. Any argument may be null/empty.
      */
-    public Map<String, Object> buildCombinedQuery(List<String> tokens, Long supervisorId,
+    public Map<String, Object> buildCombinedQuery(List<String> tokens, List<Long> supervisorIds,
                                                   LocalDate dataAdmissaoInicio, LocalDate dataAdmissaoFim) {
         String baseQuery;
         Map<String, Object> params;
@@ -229,10 +229,10 @@ public class AdvancedSearchProcessor {
 
         StringBuilder query = new StringBuilder(baseQuery);
 
-        if (supervisorId != null) {
+        if (supervisorIds != null && !supervisorIds.isEmpty()) {
             query.append(" AND EXISTS (SELECT s FROM Supervisao s WHERE s.supervisionado.id = c.id")
-                 .append(" AND s.supervisor.id = :supervisorId AND s.dataFim IS NULL)");
-            params.put("supervisorId", supervisorId);
+                 .append(" AND s.supervisor.id IN :supervisorIds AND s.dataFim IS NULL)");
+            params.put("supervisorIds", supervisorIds);
         }
 
         if (dataAdmissaoInicio != null) {

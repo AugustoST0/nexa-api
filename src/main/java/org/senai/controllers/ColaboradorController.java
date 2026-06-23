@@ -149,7 +149,7 @@ public class ColaboradorController {
             }
 
             var resultado = colaboradorService.searchAdvanced(
-                    dto.tokens(), dto.supervisorId(), dto.dataAdmissaoInicio(), dto.dataAdmissaoFim());
+                    dto.tokens(), dto.supervisorIds(), dto.dataAdmissaoInicio(), dto.dataAdmissaoFim());
             return Response.ok(resultado).build();
         } catch (BusinessRuleException e) {
             ErrorResponse error = new ErrorResponse("VALIDATION_ERROR", e.getMessage());

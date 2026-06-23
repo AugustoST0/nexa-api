@@ -52,7 +52,7 @@ public class RelatorioService {
         Grupo grupo = grupoService.getById(grupoId);
 
         boolean temTokens = grupo.getTokens() != null && !grupo.getTokens().isEmpty();
-        boolean temFiltros = grupo.getSupervisorId() != null
+        boolean temFiltros = (grupo.getSupervisorIds() != null && !grupo.getSupervisorIds().isEmpty())
                 || grupo.getDataAdmissaoInicio() != null
                 || grupo.getDataAdmissaoFim() != null;
 
@@ -62,7 +62,7 @@ public class RelatorioService {
 
         Map<String, Object> queryMap = advancedSearchProcessor.buildCombinedQuery(
                 temTokens ? grupo.getTokens() : null,
-                grupo.getSupervisorId(),
+                grupo.getSupervisorIds(),
                 grupo.getDataAdmissaoInicio(),
                 grupo.getDataAdmissaoFim()
         );

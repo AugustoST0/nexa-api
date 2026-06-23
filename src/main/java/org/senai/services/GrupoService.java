@@ -52,7 +52,7 @@ public class GrupoService {
     private void aplicarDados(Grupo grupo, GrupoCreateDTO dto) {
         grupo.setNome(dto.nome());
         grupo.setTokens(dto.tokens() != null ? new ArrayList<>(dto.tokens()) : new ArrayList<>());
-        grupo.setSupervisorId(dto.supervisorId());
+        grupo.setSupervisorIds(dto.supervisorIds() != null ? new ArrayList<>(dto.supervisorIds()) : new ArrayList<>());
         grupo.setDataAdmissaoInicio(dto.dataAdmissaoInicio());
         grupo.setDataAdmissaoFim(dto.dataAdmissaoFim());
     }
