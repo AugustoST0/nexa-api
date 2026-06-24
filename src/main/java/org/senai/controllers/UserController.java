@@ -1,5 +1,6 @@
 package org.senai.controllers;
 
+import org.senai.dtos.UserUpdateDTO;
 import org.senai.model.User;
 import org.senai.dtos.UserUpdateResponseDTO;
 import org.senai.services.UserService;
@@ -48,6 +49,22 @@ public class UserController {
     public Response update(@PathParam("id") Long id, @Valid User updatedUser) {
         UserUpdateResponseDTO user = userService.update(id, updatedUser);
         return Response.ok(user).build();
+    }
+
+    @GET
+    @Path("/me")
+    @RolesAllowed("USER")
+    public Response getMe() {
+        User user = userService.getMe();
+        return Response.ok(user).build();
+    }
+
+    @PUT
+    @Path("/me")
+    @RolesAllowed("USER")
+    public Response updateMe(@Valid UserUpdateDTO dto) {
+        UserUpdateResponseDTO result = userService.updateMe(dto);
+        return Response.ok(result).build();
     }
 
     @DELETE
