@@ -66,16 +66,16 @@ public class ColaboradorRepository implements PanacheRepository<Colaborador> {
                 params.put("nome", "%" + nome.trim() + "%");
             }
             if (matricula != null && !matricula.trim().isEmpty()) {
-                query.append(" AND LOWER(c.matricula) = LOWER(:matricula)");
-                params.put("matricula", matricula.trim());
+                query.append(" AND LOWER(c.matricula) LIKE LOWER(:matricula)");
+                params.put("matricula", "%" + matricula.trim() + "%");
             }
             if (email != null && !email.trim().isEmpty()) {
-                query.append(" AND LOWER(c.email) = LOWER(:email)");
-                params.put("email", email.trim());
+                query.append(" AND LOWER(c.email) LIKE LOWER(:email)");
+                params.put("email", "%" + email.trim() + "%");
             }
             if (cpf != null && !cpf.trim().isEmpty()) {
-                query.append(" AND LOWER(c.cpf) = LOWER(:cpf)");
-                params.put("cpf", cpf.trim());
+                query.append(" AND LOWER(c.cpf) LIKE LOWER(:cpf)");
+                params.put("cpf", "%" + cpf.trim() + "%");
             }
             if (cargo != null && !cargo.trim().isEmpty()) {
                 query.append(" AND LOWER(c.cargo) LIKE LOWER(:cargo)");

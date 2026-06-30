@@ -99,10 +99,6 @@ public class ValidationUtils {
         
         validateSearchParameter("Email", email, 255);
         
-        // Additional email format validation for search (more lenient than strict email validation)
-        if (!email.contains("@")) {
-            throw new IllegalArgumentException("Email deve conter o caractere @");
-        }
     }
     
     /**
@@ -115,11 +111,6 @@ public class ValidationUtils {
         
         validateSearchParameter("CPF", cpf, 14);
         
-        // Remove formatting for validation
-        String cleanCpf = cpf.replaceAll("[.-]", "");
-        if (!cleanCpf.matches("\\d{11}")) {
-            throw new IllegalArgumentException("CPF deve conter 11 dígitos");
-        }
     }
     
     /**
