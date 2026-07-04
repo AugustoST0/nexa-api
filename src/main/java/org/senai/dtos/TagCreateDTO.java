@@ -10,6 +10,8 @@ public record TagCreateDTO(
         String nome,
 
         @Size(max = 300, message = "A descrição não pode ter mais de 300 caracteres")
-        String descricao
+        String descricao,
+
+        Long categoriaId
 ) {
 }

@@ -9,6 +9,8 @@ public record TagUpdateDTO(
         @Size(max = 300, message = "A descrição não pode ter mais de 300 caracteres")
         String descricao,
 
-        Long grupoId
+        Long grupoId,
+
+        Long categoriaId
 ) {
 }

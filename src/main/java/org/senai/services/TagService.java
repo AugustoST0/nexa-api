@@ -3,7 +3,9 @@ package org.senai.services;
 import org.senai.dtos.TagCreateDTO;
 import org.senai.dtos.TagUpdateDTO;
 import org.senai.exception.exceptions.RegisterNotFoundException;
+import org.senai.model.CategoriaTag;
 import org.senai.model.Tag;
+import org.senai.repositories.CategoriaTagRepository;
 import org.senai.repositories.TagRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -16,6 +18,9 @@ public class TagService {
 
     @Inject
     TagRepository tagRepository;
+
+    @Inject
+    CategoriaTagRepository categoriaTagRepository;
 
     public List<Tag> getAll() {
         return tagRepository.listAll();
@@ -41,6 +46,11 @@ public class TagService {
         tag.setNome(dto.nome());
         tag.setDescricao(dto.descricao());
 
+        if (dto.categoriaId() != null) {
+            CategoriaTag categoria = categoriaTagRepository.findById(dto.categoriaId());
+            tag.setCategoria(categoria);
+        }
+
         return tagRepository.save(tag);
     }
 
@@ -54,6 +64,11 @@ public class TagService {
 
         if (dto.descricao() != null) {
             tag.setDescricao(dto.descricao());
+        }
+
+        if (dto.categoriaId() != null) {
+            CategoriaTag categoria = categoriaTagRepository.findById(dto.categoriaId());
+            tag.setCategoria(categoria);
         }
 
         return tag;

@@ -1,5 +1,6 @@
 package org.senai.controllers;
 
+import org.senai.dtos.AtribuicaoTagMassaDTO;
 import org.senai.dtos.AtribuirSupervisorDTO;
 import org.senai.dtos.ColaboradorResponseDTO;
 import org.senai.dtos.ColaboradorCreateUpdateDTO;
@@ -194,6 +195,14 @@ public class ColaboradorController {
     public Response unlinkFromTag(@PathParam("colaboradorId") Long colaboradorId, @PathParam("tagId") Long tagId) {
         colaboradorService.unlinkFromTag(colaboradorId, tagId);
         return Response.noContent().build();
+    }
+
+    @POST
+    @Path("/tags/atribuir-massa")
+    @RolesAllowed("USER")
+    public Response atribuirTagEmMassa(AtribuicaoTagMassaDTO dto) {
+        colaboradorService.linkTagsEmMassa(dto.tagId(), dto.colaboradorIds());
+        return Response.ok().build();
     }
 
     @POST

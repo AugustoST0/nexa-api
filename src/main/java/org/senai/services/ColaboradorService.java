@@ -255,6 +255,11 @@ public class ColaboradorService {
     }
 
     @Transactional
+    public void linkTagsEmMassa(Long tagId, List<Long> colaboradorIds) {
+        colaboradorIds.forEach(id -> linkToTag(id, tagId));
+    }
+
+    @Transactional
     public void atribuirSupervisor(Long colaboradorId, AtribuirSupervisorDTO dto) {
         Colaborador colaborador = getById(colaboradorId);
         Colaborador supervisor = getById(dto.supervisorId());

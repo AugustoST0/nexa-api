@@ -1,10 +1,12 @@
 package org.senai.config;
 
+import org.senai.model.CategoriaTag;
 import org.senai.model.Colaborador;
 import org.senai.model.Grupo;
 import org.senai.model.Supervisao;
 import org.senai.model.Tag;
 import org.senai.model.TipoSupervisor;
+import org.senai.repositories.CategoriaTagRepository;
 import org.senai.repositories.ColaboradorRepository;
 import org.senai.repositories.GrupoRepository;
 import org.senai.repositories.SupervisaoRepository;
@@ -19,13 +21,18 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 @ApplicationScoped
 public class TestConfig {
 
     @Inject
     TagRepository tagRepository;
+
+    @Inject
+    CategoriaTagRepository categoriaTagRepository;
 
     @Inject
     GrupoRepository grupoRepository;
@@ -45,8 +52,12 @@ public class TestConfig {
     void onStart(@Observes StartupEvent ev) {
         System.out.println("Iniciando seed do banco de dados...");
 
+        // Criar categorias antes das tags
+        Map<String, CategoriaTag> categorias = createCategorias();
+        System.out.println("Categorias processadas (criadas ou já existentes)");
+
         // Criar 50 Tags (verificando duplicatas)
-        List<Tag> tags = createTags();
+        List<Tag> tags = createTags(categorias);
         System.out.println("Tags processadas (criadas ou já existentes)");
 
         // Criar 6 Grupos (pesquisas salvas) definidos por tokens (verificando duplicatas)
@@ -67,6 +78,32 @@ public class TestConfig {
         System.out.println("Seed concluído com sucesso!");
     }
 
+    private Map<String, CategoriaTag> createCategorias() {
+        Object[][] data = {
+            {"Dev",          "#EF4444"},
+            {"Idiomas",      "#3B82F6"},
+            {"Gestão",       "#10B981"},
+            {"Metodologias", "#F59E0B"},
+        };
+
+        java.util.HashMap<String, CategoriaTag> map = new java.util.HashMap<>();
+        for (Object[] row : data) {
+            String nome = (String) row[0];
+            String cor  = (String) row[1];
+            CategoriaTag existente = categoriaTagRepository.findByNome(nome).orElse(null);
+            if (existente == null) {
+                CategoriaTag c = new CategoriaTag();
+                c.setNome(nome);
+                c.setCor(cor);
+                categoriaTagRepository.persist(c);
+                map.put(nome, c);
+            } else {
+                map.put(nome, existente);
+            }
+        }
+        return map;
+    }
+
     private void limparObservacoesMotivoNull() {
         List<Supervisao> comMotivoNull =
                 supervisaoRepository.list("observacoes like ?1", "%Motivo: null%");
@@ -82,7 +119,26 @@ public class TestConfig {
         System.out.println("Observações de supervisão limpas (Motivo: null removido): " + comMotivoNull.size());
     }
 
-    private List<Tag> createTags() {
+    private static final Map<String, String> TAG_CATEGORIAS = Map.ofEntries(
+        Map.entry("Java",               "Dev"),
+        Map.entry("Python",             "Dev"),
+        Map.entry("JavaScript",         "Dev"),
+        Map.entry("React",              "Dev"),
+        Map.entry("Node.js",            "Dev"),
+        Map.entry("SQL",                "Dev"),
+        Map.entry("Git",                "Dev"),
+        Map.entry("Docker",             "Dev"),
+        Map.entry("AWS",                "Dev"),
+        Map.entry("Kubernetes",         "Dev"),
+        Map.entry("Scrum",              "Metodologias"),
+        Map.entry("Kanban",             "Metodologias"),
+        Map.entry("Liderança de Equipe","Gestão"),
+        Map.entry("Gestão de Projetos", "Gestão"),
+        Map.entry("Inglês Avançado",    "Idiomas"),
+        Map.entry("Espanhol",           "Idiomas")
+    );
+
+    private List<Tag> createTags(Map<String, CategoriaTag> categorias) {
         List<Tag> tags = new ArrayList<>();
         int tagsCriadas = 0;
         int tagsExistentes = 0;
@@ -160,6 +216,10 @@ public class TestConfig {
                 Tag tag = new Tag();
                 tag.setNome(tagData[0]);
                 tag.setDescricao(tagData[1]);
+                String nomeCategoria = TAG_CATEGORIAS.get(tagData[0]);
+                if (nomeCategoria != null) {
+                    tag.setCategoria(categorias.get(nomeCategoria));
+                }
                 tagRepository.persist(tag);
                 tags.add(tag);
                 tagsCriadas++;

@@ -26,4 +26,8 @@ public class Tag {
 
     @Size(max = 300, message = "A descrição não pode ter mais de 300 caracteres")
     private String descricao;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "categoria_id")
+    private CategoriaTag categoria;
 }
