@@ -27,4 +27,12 @@ public class TagRepository implements PanacheRepository<Tag> {
     public Optional<Tag> findByNome(String nome) {
         return find("nome", nome).firstResultOptional();
     }
+
+    @Transactional
+    public void removerAssociacoesColaboradorTags(Long tagId) {
+        getEntityManager()
+                .createNativeQuery("DELETE FROM colaborador_tags WHERE tag_id = ?1")
+                .setParameter(1, tagId)
+                .executeUpdate();
+    }
 }

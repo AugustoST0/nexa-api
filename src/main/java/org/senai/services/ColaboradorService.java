@@ -4,14 +4,17 @@ import org.hibernate.Hibernate;
 import org.senai.dtos.AtribuirSupervisorDTO;
 import org.senai.dtos.ColaboradorCreateUpdateDTO;
 import org.senai.dtos.ColaboradorFilterResponseDTO;
+import org.senai.dtos.ImpactoExclusaoDTO;
 import org.senai.dtos.SupervisorDiretoDTO;
 import org.senai.exception.exceptions.BusinessRuleException;
 import org.senai.exception.exceptions.RegisterNotFoundException;
 import org.senai.model.Colaborador;
+import org.senai.model.Grupo;
 import org.senai.model.Supervisao;
 import org.senai.model.Tag;
 import org.senai.model.TipoSupervisor;
 import org.senai.repositories.ColaboradorRepository;
+import org.senai.repositories.GrupoRepository;
 import org.senai.utils.ValidationUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -35,6 +38,9 @@ public class ColaboradorService {
 
     @Inject
     TipoSupervisorService tipoSupervisorService;
+
+    @Inject
+    GrupoRepository grupoRepository;
 
     @Transactional
     public List<Colaborador> getAll() {
@@ -189,9 +195,28 @@ public class ColaboradorService {
         return saved;
     }
 
+    public ImpactoExclusaoDTO getImpactoExclusao(Long id) {
+        List<String> nomesPesquisasAfetadas = grupoRepository.findAtivosPorSupervisorId(id).stream()
+                .map(Grupo::getNome)
+                .toList();
+
+        return new ImpactoExclusaoDTO(nomesPesquisasAfetadas);
+    }
+
     @Transactional
     public void delete(Long id) {
         Colaborador colaborador = getById(id);
+
+        List<Grupo> gruposAfetados = grupoRepository.findAtivosPorSupervisorId(id);
+        for (Grupo grupo : gruposAfetados) {
+            grupo.setAtivo(false);
+            grupo.setInativadoPorSistema(true);
+            grupo.setMotivoInativacao("Colaborador '" + colaborador.getNome() + "' (supervisor) foi excluído em " + LocalDate.now());
+            grupo.getSupervisorIds().remove(id);
+        }
+
+        supervisaoService.deleteTodasDoColaborador(id);
+
         colaborador.getTags().clear();
         colaboradorRepository.deleteById(id);
     }

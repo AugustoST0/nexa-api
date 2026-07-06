@@ -1,5 +1,6 @@
 package org.senai.controllers;
 
+import org.senai.dtos.ImpactoExclusaoDTO;
 import org.senai.dtos.TagCreateDTO;
 import org.senai.dtos.TagUpdateDTO;
 import org.senai.model.Tag;
@@ -49,6 +50,13 @@ public class TagController {
     public Response update(@PathParam("id") Long id, @Valid TagUpdateDTO dto) {
         Tag tag = tagService.update(id, dto);
         return Response.ok(tag).build();
+    }
+
+    @GET
+    @Path("/{id}/impacto")
+    public Response getImpactoExclusao(@PathParam("id") Long id) {
+        ImpactoExclusaoDTO impacto = tagService.getImpactoExclusao(id);
+        return Response.ok(impacto).build();
     }
 
     @DELETE

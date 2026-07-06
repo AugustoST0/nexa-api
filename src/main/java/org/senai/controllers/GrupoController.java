@@ -1,5 +1,6 @@
 package org.senai.controllers;
 
+import org.senai.dtos.DesativarGrupoDTO;
 import org.senai.dtos.GrupoCreateDTO;
 import org.senai.model.Grupo;
 import org.senai.services.GrupoService;
@@ -47,6 +48,22 @@ public class GrupoController {
     @RolesAllowed("USER")
     public Response update(@PathParam("id") Long id, @Valid GrupoCreateDTO dto) {
         Grupo grupo = grupoService.update(id, dto);
+        return Response.ok(grupo).build();
+    }
+
+    @PUT
+    @Path("/{id}/desativar")
+    @RolesAllowed("USER")
+    public Response desativar(@PathParam("id") Long id, DesativarGrupoDTO dto) {
+        Grupo grupo = grupoService.desativar(id, dto != null ? dto.motivo() : null);
+        return Response.ok(grupo).build();
+    }
+
+    @PUT
+    @Path("/{id}/ativar")
+    @RolesAllowed("USER")
+    public Response ativar(@PathParam("id") Long id) {
+        Grupo grupo = grupoService.ativar(id);
         return Response.ok(grupo).build();
     }
 

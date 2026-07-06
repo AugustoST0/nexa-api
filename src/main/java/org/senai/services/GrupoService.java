@@ -1,6 +1,8 @@
 package org.senai.services;
 
+import org.hibernate.Hibernate;
 import org.senai.dtos.GrupoCreateDTO;
+import org.senai.exception.exceptions.BusinessRuleException;
 import org.senai.exception.exceptions.RegisterNotFoundException;
 import org.senai.model.Grupo;
 import org.senai.repositories.GrupoRepository;
@@ -9,6 +11,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,16 +24,28 @@ public class GrupoService {
     @Inject
     RelatorioRepository relatorioRepository;
 
+    @Transactional
     public List<Grupo> getAll() {
-        return grupoRepository.listAll();
+        List<Grupo> grupos = grupoRepository.listAll();
+
+        for (Grupo grupo : grupos) {
+            Hibernate.initialize(grupo.getTokens());
+            Hibernate.initialize(grupo.getSupervisorIds());
+        }
+
+        return grupos;
     }
 
+    @Transactional
     public Grupo getById(Long id) {
         Grupo grupo = grupoRepository.findById(id);
 
         if (grupo == null) {
             throw new RegisterNotFoundException("Grupo não encontrado");
         }
+
+        Hibernate.initialize(grupo.getTokens());
+        Hibernate.initialize(grupo.getSupervisorIds());
 
         return grupo;
     }
@@ -55,6 +70,29 @@ public class GrupoService {
         grupo.setSupervisorIds(dto.supervisorIds() != null ? new ArrayList<>(dto.supervisorIds()) : new ArrayList<>());
         grupo.setDataAdmissaoInicio(dto.dataAdmissaoInicio());
         grupo.setDataAdmissaoFim(dto.dataAdmissaoFim());
+    }
+
+    @Transactional
+    public Grupo desativar(Long id, String motivo) {
+        Grupo grupo = getById(id);
+        grupo.setAtivo(false);
+        grupo.setInativadoPorSistema(false);
+        grupo.setMotivoInativacao(motivo != null && !motivo.isBlank()
+                ? motivo
+                : "Desativada manualmente por administrador em " + LocalDate.now());
+        return grupoRepository.save(grupo);
+    }
+
+    @Transactional
+    public Grupo ativar(Long id) {
+        Grupo grupo = getById(id);
+
+        if (Boolean.TRUE.equals(grupo.getInativadoPorSistema())) {
+            throw new BusinessRuleException("Esta pesquisa foi desativada automaticamente pelo sistema e não pode ser reativada");
+        }
+
+        grupo.setAtivo(true);
+        return grupoRepository.save(grupo);
     }
 
     @Transactional

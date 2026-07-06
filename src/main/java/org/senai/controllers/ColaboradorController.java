@@ -6,6 +6,7 @@ import org.senai.dtos.ColaboradorResponseDTO;
 import org.senai.dtos.ColaboradorCreateUpdateDTO;
 import org.senai.dtos.AdvancedSearchDTO;
 import org.senai.dtos.ErrorResponse;
+import org.senai.dtos.ImpactoExclusaoDTO;
 import org.senai.exception.exceptions.BusinessRuleException;
 import org.senai.exception.exceptions.RegisterNotFoundException;
 import org.senai.model.Colaborador;
@@ -211,6 +212,13 @@ public class ColaboradorController {
     public Response atribuirSupervisor(@PathParam("id") Long id, @Valid AtribuirSupervisorDTO dto) {
         colaboradorService.atribuirSupervisor(id, dto);
         return Response.noContent().build();
+    }
+
+    @GET
+    @Path("/{id}/impacto")
+    public Response getImpactoExclusao(@PathParam("id") Long id) {
+        ImpactoExclusaoDTO impacto = colaboradorService.getImpactoExclusao(id);
+        return Response.ok(impacto).build();
     }
 
     @DELETE

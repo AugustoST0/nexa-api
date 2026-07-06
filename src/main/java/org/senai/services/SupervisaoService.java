@@ -106,6 +106,11 @@ public class SupervisaoService {
     }
 
     @Transactional
+    public void deleteTodasDoColaborador(Long colaboradorId) {
+        supervisaoRepository.delete("supervisor.id = ?1 OR supervisionado.id = ?1", colaboradorId);
+    }
+
+    @Transactional
     public void encerrarSupervisao(Long id) {
         Supervisao supervisao = getById(id);
         supervisao.setDataFim(LocalDate.now());

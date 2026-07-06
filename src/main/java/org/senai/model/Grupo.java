@@ -23,7 +23,7 @@ public class Grupo {
     private Long id;
 
     @NotBlank(message = "O nome é obrigatório")
-    @Size(max = 100, message = "O nome não pode ter mais de 100 caracteres")
+    @Size(max = 1500, message = "O nome não pode ter mais de 100 caracteres")
     private String nome;
 
     @ElementCollection
@@ -46,6 +46,10 @@ public class Grupo {
 
     @Column(name = "criado_em", updatable = false)
     private LocalDateTime criadoEm;
+
+    private Boolean ativo = true;
+    private Boolean inativadoPorSistema = false;
+    private String motivoInativacao;
 
     @PrePersist
     void prePersist() {
